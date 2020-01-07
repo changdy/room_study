@@ -1,67 +1,36 @@
 package com.example.word
 
+import android.content.Context
 import android.os.Bundle
-import android.widget.Button
-import android.widget.Switch
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
+import androidx.navigation.ui.NavigationUI
 
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        navController = Navigation.findNavController(findViewById(R.id.fragment))
+        NavigationUI.setupActionBarWithNavController(this, navController)
         WordDatabase.initInstance(this)
-        val wordViewModel: WordViewModel =
-            ViewModelProviders.of(this).get(WordViewModel::class.java)
-        val cardAdapter = MyAdapter(true, wordViewModel)
-        val normalAdapter = MyAdapter(false, wordViewModel)
-        val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = normalAdapter
-        val insertButton: Button = findViewById(R.id.button_insert)
-        val clearButton: Button = findViewById(R.id.button_clear)
-        val cardSwitch = findViewById<Switch>(R.id.card_switch)
-            .also {
-                it.setOnCheckedChangeListener { _, y ->
-                    val adapter = if (y) cardAdapter else normalAdapter
-                    adapter.allWords = wordViewModel.getAllWordsLive().value!!
-                    recyclerView.adapter = adapter
-                }
-            }
-        // 有泛型 不能隐藏
-        wordViewModel.getAllWordsLive()
-            .observe(this, Observer<List<WordEntity>> {
-                val adapter = if (cardSwitch.isChecked) cardAdapter else normalAdapter
-                val itemCount = adapter.itemCount
-                adapter.allWords = it
-                // 这里要注意 , 避免数据绑定的时候 陷入循环
-                if (itemCount != it.size) {
-                    adapter.notifyDataSetChanged()
-                }
-            })
-        val map = mapOf(
-            "Hello" to "你好",
-            "World" to "世界",
-            "Android" to "安卓系统",
-            "Google" to "谷歌公司",
-            "Studio" to "工作室",
-            "Project" to "项目",
-            "Database" to "数据库",
-            "Recycler" to "回收站",
-            "View" to "视图",
-            "String" to "字符串",
-            "Value" to "价值",
-            "Integer" to "整数类型"
-        )
-        // 没泛型可以隐藏   insertButton.setOnClickListener(View.OnClickListener {   })
-        insertButton.setOnClickListener {
-            map.forEach { wordViewModel.insertWords(WordEntity(null, it.key, it.value, true)) }
-        }
-        clearButton.setOnClickListener { wordViewModel.deleteAllWords() }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        navController.navigateUp()
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        // 这里是收起键盘 ,其实也可以放到  WordsFragment 的 onResume 里面 , 但是我感觉放到这里更恰当一些
+        inputMethodManager.hideSoftInputFromWindow(findViewById<View>(R.id.fragment).windowToken, 0)
+        navController.navigateUp()
+        return super.onSupportNavigateUp()
     }
 }
