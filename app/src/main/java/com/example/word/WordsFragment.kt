@@ -18,10 +18,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
  */
 class WordsFragment : Fragment() {
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_words, container, false)
     }
@@ -41,8 +38,7 @@ class WordsFragment : Fragment() {
             }
         })
         recyclerView.adapter = adapter
-        val floatingActionButton =
-            requireActivity().findViewById<FloatingActionButton>(R.id.floatingActionButton)
+        val floatingActionButton = requireActivity().findViewById<FloatingActionButton>(R.id.floatingActionButton)
         floatingActionButton.setOnClickListener {
             Navigation
                 .findNavController(it)
