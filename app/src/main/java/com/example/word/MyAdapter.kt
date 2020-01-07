@@ -19,16 +19,12 @@ class MyAdapter(private var userCardView: Boolean, private var wordViewModel: Wo
     @NonNull
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
-        val inflate = layoutInflater.inflate(
-            if (userCardView) R.layout.cell_card else R.layout.cell_normal,
-            parent,
-            false
-        )
+        val layOutType = if (userCardView) R.layout.cell_card else R.layout.cell_normal
+        val inflate = layoutInflater.inflate(layOutType, parent, false)
         val holder = MyViewHolder(inflate)
         holder.itemView.setOnClickListener {
             val intent = Intent(Intent.ACTION_VIEW).also {
-                it.data =
-                    Uri.parse("https://m.youdao.com/dict?le=eng&q=${holder.textViewEnglish.text}")
+                it.data = Uri.parse("https://m.youdao.com/dict?le=eng&q=${holder.textViewEnglish.text}")
             }
             holder.itemView.context.startActivities(arrayOf(intent))
         }
