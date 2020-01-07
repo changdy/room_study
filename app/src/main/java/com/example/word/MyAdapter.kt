@@ -28,14 +28,33 @@ class MyAdapter(
             parent,
             false
         )
-        return MyViewHolder(inflate)
+        val holder = MyViewHolder(inflate)
+        holder.itemView.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW).also {
+                it.data =
+                    Uri.parse("https://m.youdao.com/dict?le=eng&q=${holder.textViewEnglish.text}")
+            }
+            holder.itemView.context.startActivities(arrayOf(intent))
+        }
+        holder.invisibleSwitch.setOnCheckedChangeListener { _, y ->
+            val wordEntity = holder.itemView.getTag(R.id.word_for_view_holder) as WordEntity
+            if (y) {
+                holder.textViewChinese.visibility = View.INVISIBLE
+                wordEntity.chineseInvisible = true
+            } else {
+                holder.textViewChinese.visibility = View.VISIBLE
+                wordEntity.chineseInvisible = false
+            }
+            wordViewModel.updateWords(wordEntity)
+        }
+        return holder
     }
 
     override fun getItemCount() = allWords.size
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val wordEntity = allWords[position]
-        holder.invisibleSwitch.setOnCheckedChangeListener(null)
+        holder.itemView.setTag(R.id.word_for_view_holder, wordEntity)
         if (wordEntity.chineseInvisible!!) {
             holder.textViewChinese.visibility = View.INVISIBLE
             holder.invisibleSwitch.isChecked = true
@@ -46,22 +65,6 @@ class MyAdapter(
         holder.textViewNumber.text = wordEntity.id.toString()
         holder.textViewChinese.text = wordEntity.chineseMeaning
         holder.textViewEnglish.text = wordEntity.word
-        holder.itemView.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW).also {
-                it.data = Uri.parse("https://m.youdao.com/dict?le=eng&q=${wordEntity.word}")
-            }
-            holder.itemView.context.startActivities(arrayOf(intent))
-        }
-        holder.invisibleSwitch.setOnCheckedChangeListener { _, y ->
-            if (y) {
-                holder.textViewChinese.visibility = View.INVISIBLE
-                wordEntity.chineseInvisible = true
-            } else {
-                holder.textViewChinese.visibility = View.VISIBLE
-                wordEntity.chineseInvisible = false
-            }
-            wordViewModel.updateWords(wordEntity)
-        }
     }
 }
 
