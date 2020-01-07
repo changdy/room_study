@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">words test</string>
     <string name="insert">插入</string>
     <string name="update">更新</string>
     <string name="clear">清空</string>
