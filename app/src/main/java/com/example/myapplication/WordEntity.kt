@@ -9,7 +9,8 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "word")
 data class WordEntity(
-    @PrimaryKey(autoGenerate = true) var id: Int? = null
-    , @ColumnInfo(name = "english_word") var word: String? = null
-    , @ColumnInfo(name = "chinese_meaning") var chineseMeaning: String? = null
+    @PrimaryKey(autoGenerate = true) var id: Int? = null,
+    @ColumnInfo(name = "english_word") var word: String? = null,
+    @ColumnInfo(name = "chinese_meaning") var chineseMeaning: String? = null,
+    @ColumnInfo(name = "chinese_invisible") var chineseInvisible: Boolean? = null
 )

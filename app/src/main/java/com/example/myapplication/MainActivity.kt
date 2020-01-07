@@ -16,15 +16,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         WordDatabase.initInstance(this)
-        val cardAdapter = MyAdapter(true)
-        val normalAdapter = MyAdapter(false)
+        val wordViewModel: WordViewModel =
+            ViewModelProviders.of(this).get(WordViewModel::class.java)
+        val cardAdapter = MyAdapter(true, wordViewModel)
+        val normalAdapter = MyAdapter(false, wordViewModel)
         val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = normalAdapter
         val insertButton: Button = findViewById(R.id.button_insert)
         val clearButton: Button = findViewById(R.id.button_clear)
-        val wordViewModel: WordViewModel =
-            ViewModelProviders.of(this).get(WordViewModel::class.java)
         val cardSwitch = findViewById<Switch>(R.id.card_switch)
             .also {
                 it.setOnCheckedChangeListener { _, y ->
@@ -37,8 +37,12 @@ class MainActivity : AppCompatActivity() {
         wordViewModel.getAllWordsLive()
             .observe(this, Observer<List<WordEntity>> {
                 val adapter = if (cardSwitch.isChecked) cardAdapter else normalAdapter
+                val itemCount = adapter.itemCount
                 adapter.allWords = it
-                adapter.notifyDataSetChanged()
+                // 这里要注意 , 避免数据绑定的时候 陷入循环
+                if (itemCount != it.size) {
+                    adapter.notifyDataSetChanged()
+                }
             })
         val map = mapOf(
             "Hello" to "你好",
@@ -56,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         )
         // 没泛型可以隐藏   insertButton.setOnClickListener(View.OnClickListener {   })
         insertButton.setOnClickListener {
-            map.forEach { wordViewModel.insertWords(WordEntity(null, it.key, it.value)) }
+            map.forEach { wordViewModel.insertWords(WordEntity(null, it.key, it.value, true)) }
         }
         clearButton.setOnClickListener { wordViewModel.deleteAllWords() }
     }
