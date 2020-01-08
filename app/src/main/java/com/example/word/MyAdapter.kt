@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 /**
  * Created by Changdy on 2020/1/5.
  */
-class MyAdapter(private var userCardView: Boolean, private var wordViewModel: WordViewModel) : RecyclerView.Adapter<MyViewHolder>() {
+class MyAdapter(private var userCardView: Boolean, private var wordRepository: WordRepository) : RecyclerView.Adapter<MyViewHolder>() {
     var allWords: List<WordEntity> = mutableListOf()
 
     @NonNull
@@ -37,7 +37,7 @@ class MyAdapter(private var userCardView: Boolean, private var wordViewModel: Wo
                 holder.textViewChinese.visibility = View.VISIBLE
                 wordEntity.chineseInvisible = false
             }
-            wordViewModel.updateWords(wordEntity)
+            wordRepository.updateWords(wordEntity)
         }
         return holder
     }

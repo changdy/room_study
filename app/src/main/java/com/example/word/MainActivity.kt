@@ -15,10 +15,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WordDatabase.initInstance(this)
         setContentView(R.layout.activity_main)
         navController = Navigation.findNavController(findViewById(R.id.fragment))
         NavigationUI.setupActionBarWithNavController(this, navController)
-        WordDatabase.initInstance(this)
     }
 
     override fun onBackPressed() {

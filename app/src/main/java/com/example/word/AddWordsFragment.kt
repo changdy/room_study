@@ -12,7 +12,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
 import kotlinx.android.synthetic.main.fragment_add_words.*
 
@@ -45,11 +44,11 @@ class AddWordsFragment : Fragment() {
         }
         editTextEng.addTextChangedListener(textWatcher)
         editTextChinese.addTextChangedListener(textWatcher)
-        val wordViewModel: WordViewModel = ViewModelProviders.of(activity).get(WordViewModel::class.java)
+        val wordRepository = WordRepository()
         buttonSubmit.setOnClickListener {
             val eng = editTextEng.text.toString().trim()
             val chinese = editTextChinese.text.toString().trim()
-            wordViewModel.insertWords(WordEntity(null, eng, chinese, true))
+            wordRepository.insertWords(WordEntity(null, eng, chinese, true))
             Navigation.findNavController(it).navigateUp()
             imm.hideSoftInputFromWindow(it.windowToken, 0)
         }
