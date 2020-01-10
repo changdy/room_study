@@ -91,10 +91,11 @@ class WordsFragment : Fragment() {
 
     private fun fillAdapter(pattern: String? = null) {
         if (this::wordEntity.isInitialized) {
-            wordEntity.removeObservers(requireActivity())
+            wordEntity.removeObservers(viewLifecycleOwner)
         }
         wordEntity = wordRepository.getWords(pattern)
-        wordEntity.observe(requireActivity(), Observer<List<WordEntity>> {
+        // 此处的 observe方法的 LifecycleOwner 要写正确, 不能直接写 activity 否则会导致重复创建
+        wordEntity.observe(viewLifecycleOwner, Observer<List<WordEntity>> {
             val currentAdapter = getCurrentAdapter()
             val itemCount = currentAdapter.itemCount
             if (it.size != itemCount) {
@@ -108,9 +109,9 @@ class WordsFragment : Fragment() {
     }
 
     private fun changeAdapter() {
-        wordEntity.removeObservers(requireActivity())
+        wordEntity.removeObservers(viewLifecycleOwner)
         val currentAdapter = getCurrentAdapter()
-        wordEntity.observe(requireActivity(), Observer<List<WordEntity>> {
+        wordEntity.observe(viewLifecycleOwner, Observer<List<WordEntity>> {
             currentAdapter.submitList(it)
 //            currentAdapter.notifyDataSetChanged()
         })
