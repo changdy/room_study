@@ -65,10 +65,12 @@ class WordsFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        recyclerView = requireActivity().findViewById<RecyclerView>(R.id.recyclerView)
+        recyclerView = requireActivity().findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         fillAdapter()
         recyclerView.adapter = getCurrentAdapter()
+//        这里可以设置动画效果 ,由于 我这边本身就是 倒序排列,所以 无需进行此运算
+//        recyclerView.itemAnimator= RecyclerView.ItemAnimator(){}
         val floatingActionButton = requireActivity().findViewById<FloatingActionButton>(R.id.floatingActionButton)
         floatingActionButton.setOnClickListener { Navigation.findNavController(it).navigate(R.id.action_wordsFragment_to_addWordsFragment) }
     }
@@ -95,9 +97,12 @@ class WordsFragment : Fragment() {
         wordEntity.observe(requireActivity(), Observer<List<WordEntity>> {
             val currentAdapter = getCurrentAdapter()
             val itemCount = currentAdapter.itemCount
-            currentAdapter.allWords = it
             if (it.size != itemCount) {
-                currentAdapter.notifyDataSetChanged()
+                currentAdapter.submitList(it)
+                recyclerView.smoothScrollToPosition(0)
+//                recyclerView.smoothScrollBy(0, -200)
+//                currentAdapter.notifyDataSetChanged()
+//                currentAdapter.notifyItemInserted(0)
             }
         })
     }
@@ -106,8 +111,8 @@ class WordsFragment : Fragment() {
         wordEntity.removeObservers(requireActivity())
         val currentAdapter = getCurrentAdapter()
         wordEntity.observe(requireActivity(), Observer<List<WordEntity>> {
-            currentAdapter.allWords = it
-            currentAdapter.notifyDataSetChanged()
+            currentAdapter.submitList(it)
+//            currentAdapter.notifyDataSetChanged()
         })
         recyclerView.adapter = currentAdapter
     }

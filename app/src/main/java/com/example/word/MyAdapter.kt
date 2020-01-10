@@ -8,13 +8,25 @@ import android.view.ViewGroup
 import android.widget.Switch
 import android.widget.TextView
 import androidx.annotation.NonNull
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+
 
 /**
  * Created by Changdy on 2020/1/5.
  */
-class MyAdapter(private var userCardView: Boolean, private var wordRepository: WordRepository) : RecyclerView.Adapter<MyViewHolder>() {
-    var allWords: List<WordEntity> = mutableListOf()
+class MyAdapter(private var userCardView: Boolean, private var wordRepository: WordRepository) : ListAdapter<WordEntity, MyViewHolder>(object : DiffUtil.ItemCallback<WordEntity>() {
+    override fun areItemsTheSame(oldItem: WordEntity, newItem: WordEntity): Boolean {
+        return oldItem.id == newItem.id
+    }
+
+    override fun areContentsTheSame(oldItem: WordEntity, newItem: WordEntity): Boolean {
+        return oldItem.word == newItem.word
+                && oldItem.chineseMeaning == newItem.chineseMeaning
+                && oldItem.chineseInvisible == newItem.chineseInvisible
+    }
+}) {
 
     @NonNull
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
@@ -42,10 +54,8 @@ class MyAdapter(private var userCardView: Boolean, private var wordRepository: W
         return holder
     }
 
-    override fun getItemCount() = allWords.size
-
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        val wordEntity = allWords[position]
+        val wordEntity = getItem(position)
         holder.itemView.setTag(R.id.word_for_view_holder, wordEntity)
         if (wordEntity.chineseInvisible!!) {
             holder.textViewChinese.visibility = View.INVISIBLE
