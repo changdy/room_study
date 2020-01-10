@@ -10,9 +10,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 
 
 /**
@@ -23,8 +26,9 @@ class WordsFragment : Fragment() {
     private val wordRepository = WordRepository()
     private val normalAdapter = MyAdapter(false, wordRepository)
     private val cardAdapter = MyAdapter(true, wordRepository)
-    private lateinit var wordEntity: LiveData<List<WordEntity>>
+    private lateinit var words: LiveData<List<WordEntity>>
     private lateinit var recyclerView: RecyclerView
+    private lateinit var dividerItemDecoration: DividerItemDecoration
 
 
     companion object {
@@ -68,7 +72,21 @@ class WordsFragment : Fragment() {
         recyclerView = requireActivity().findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())
         fillAdapter()
+        dividerItemDecoration = DividerItemDecoration(requireActivity(), DividerItemDecoration.VERTICAL)
         recyclerView.adapter = getCurrentAdapter()
+        operateDividerItemDecoration()
+        object : ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, START or END) {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder) = false
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val wordEntity = words.value!![viewHolder.adapterPosition]
+                wordRepository.deleteWords(wordEntity)
+                Snackbar
+                    .make(requireActivity().findViewById(R.id.words_fragment), "删除一个词汇", Snackbar.LENGTH_SHORT)
+                    .setAction("撤销") { wordRepository.insertWords(wordEntity) }
+                    .show()
+            }
+        }) {
+        }.attachToRecyclerView(recyclerView)
 //        这里可以设置动画效果 ,由于 我这边本身就是 倒序排列,所以 无需进行此运算
 //        recyclerView.itemAnimator= RecyclerView.ItemAnimator(){}
         val floatingActionButton = requireActivity().findViewById<FloatingActionButton>(R.id.floatingActionButton)
@@ -90,12 +108,12 @@ class WordsFragment : Fragment() {
     }
 
     private fun fillAdapter(pattern: String? = null) {
-        if (this::wordEntity.isInitialized) {
-            wordEntity.removeObservers(viewLifecycleOwner)
+        if (this::words.isInitialized) {
+            words.removeObservers(viewLifecycleOwner)
         }
-        wordEntity = wordRepository.getWords(pattern)
+        words = wordRepository.getWords(pattern)
         // 此处的 observe方法的 LifecycleOwner 要写正确, 不能直接写 activity 否则会导致重复创建
-        wordEntity.observe(viewLifecycleOwner, Observer<List<WordEntity>> {
+        words.observe(viewLifecycleOwner, Observer<List<WordEntity>> {
             val currentAdapter = getCurrentAdapter()
             val itemCount = currentAdapter.itemCount
             if (it.size != itemCount) {
@@ -109,17 +127,27 @@ class WordsFragment : Fragment() {
     }
 
     private fun changeAdapter() {
-        wordEntity.removeObservers(viewLifecycleOwner)
+        words.removeObservers(viewLifecycleOwner)
         val currentAdapter = getCurrentAdapter()
-        wordEntity.observe(viewLifecycleOwner, Observer<List<WordEntity>> {
+        words.observe(viewLifecycleOwner, Observer<List<WordEntity>> {
             currentAdapter.submitList(it)
 //            currentAdapter.notifyDataSetChanged()
         })
         recyclerView.adapter = currentAdapter
+        operateDividerItemDecoration()
     }
 
     private fun getCurrentAdapter(): MyAdapter {
         val shp = requireActivity().getSharedPreferences(VIEW_TYPE_SHP, Context.MODE_PRIVATE)
-        return if (shp.getBoolean(IS_USING_CARD_VIEW, false)) cardAdapter else normalAdapter
+        val useCard = shp.getBoolean(IS_USING_CARD_VIEW, false)
+        return if (useCard) cardAdapter else normalAdapter
+    }
+
+    private fun operateDividerItemDecoration() {
+        if (recyclerView.adapter === normalAdapter) {
+            recyclerView.addItemDecoration(dividerItemDecoration)
+        } else {
+            recyclerView.removeItemDecoration(dividerItemDecoration)
+        }
     }
 }
